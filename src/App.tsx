@@ -5,6 +5,7 @@ function App() {
   return (
     <div className="app">
       <Decryptor />
+      <p className="credit">Made by P'August</p>
     </div>
   )
 }
