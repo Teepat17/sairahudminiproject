@@ -17,7 +17,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   const [isSpeedBoost, setIsSpeedBoost] = useState(false);
 
   const getLevelSpeed = (level: number) => {
-    const baseSpeed = 500;
+    const baseSpeed = 750;
     const speedMultiplier = Math.max(0.4, 1 - (level - 1) * 0.15);
     return Math.round(baseSpeed * speedMultiplier);
   };
