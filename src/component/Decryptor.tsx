@@ -14,9 +14,10 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   const [gameOver, setGameOver] = useState(false);
   const [level, setLevel] = useState(1);
   const [showLevelComplete, setShowLevelComplete] = useState(false);
+  const [isSpeedBoost, setIsSpeedBoost] = useState(false);
 
   const getLevelSpeed = (level: number) => {
-    const baseSpeed = 1000;
+    const baseSpeed = 500;
     const speedMultiplier = Math.max(0.4, 1 - (level - 1) * 0.15);
     return Math.round(baseSpeed * speedMultiplier);
   };
@@ -26,8 +27,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
 
     const moveStar = () => {
       setStarPosition({
-        x: Math.random() * 100,
-        y: Math.random() * 100
+        x: Math.random() * 90,
+        y: Math.random() * 90
       });
     };
 
@@ -41,13 +42,20 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
       });
     }, 1000);
 
-    const starInterval = setInterval(moveStar, getLevelSpeed(level));
+    // Use 250ms speed for the first second, then normal level speed
+    const starInterval = setInterval(moveStar, isSpeedBoost ? 250 : getLevelSpeed(level));
+
+    // Reset speed boost after 1 second
+    const speedBoostTimer = setTimeout(() => {
+      setIsSpeedBoost(false);
+    }, 1000);
 
     return () => {
       clearInterval(timer);
       clearInterval(starInterval);
+      clearTimeout(speedBoostTimer);
     };
-  }, [isPlaying, gameOver, level, showLevelComplete]);
+  }, [isPlaying, gameOver, level, showLevelComplete, isSpeedBoost]);
 
   const handleMiss = () => {
     setLives(prev => {
@@ -75,9 +83,11 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setShowLevelComplete(false);
     // Set random star position for the new level
     setStarPosition({
-      x: Math.random() * 100,
-      y: Math.random() * 100
+      x: Math.random() * 90,
+      y: Math.random() * 90
     });
+    // Activate speed boost for the first second
+    setIsSpeedBoost(true);
   };
 
   const handleGameAreaClick = (e: React.MouseEvent) => {
@@ -93,6 +103,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setIsPlaying(true);
     setLevel(1);
     setShowLevelComplete(false);
+    setIsSpeedBoost(true); // Activate speed boost on restart too
   };
 
   const renderLevelComplete = () => (
