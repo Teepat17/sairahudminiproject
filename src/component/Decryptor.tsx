@@ -18,8 +18,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
 
     const moveStar = () => {
       setStarPosition({
-        x: Math.random() * 500,
-        y: Math.random() * 500
+        x: Math.random() * 200,
+        y: Math.random() * 200
       });
     };
 
