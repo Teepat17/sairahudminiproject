@@ -4,9 +4,25 @@ import './Decryptor.css';
 interface GameProps {
   onWin: () => void;
   onClose: () => void;
+  encryptedText: string;
 }
 
-const MiniGame = ({ onWin, onClose }: GameProps) => {
+const caesarDecrypt = (text: string, shift: number) => {
+  return text
+    .split('')
+    .map(char => {
+      if (char.match(/[a-z]/i)) {
+        const code = char.charCodeAt(0);
+        const isUpperCase = code >= 65 && code <= 90;
+        const base = isUpperCase ? 65 : 97;
+        return String.fromCharCode(((code - base - shift + 26) % 26) + base);
+      }
+      return char;
+    })
+    .join('');
+};
+
+const MiniGame = ({ onWin, onClose, encryptedText }: GameProps) => {
   const [starPosition, setStarPosition] = useState({ x: 50, y: 50 });
   const [timeLeft, setTimeLeft] = useState(10);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -15,6 +31,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   const [level, setLevel] = useState(1);
   const [showLevelComplete, setShowLevelComplete] = useState(false);
   const [isSpeedBoost, setIsSpeedBoost] = useState(false);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   const getLevelSpeed = (level: number) => {
     const baseSpeed = 650;
@@ -67,12 +84,20 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     });
   };
 
+  const handleWin = () => {
+    setShowCongrats(true);
+    // Wait for animation to complete before showing decrypted text
+    setTimeout(() => {
+      onWin();
+      setIsPlaying(false);
+    }, 3000);
+  };
+
   const handleStarClick = () => {
     if (level < 5) {
       setShowLevelComplete(true);
     } else {
-      onWin();
-      setIsPlaying(false);
+      handleWin();
     }
   };
 
@@ -117,6 +142,26 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     </div>
   );
 
+  const renderCongrats = () => (
+    <div className="congrats-overlay">
+      <div className="congrats-content">
+        <h2>🎉 Congratulations! 🎉</h2>
+        <div className="confetti-container">
+          {[...Array(50)].map((_, i) => (
+            <div key={i} className="confetti" style={{
+              '--delay': `${Math.random() * 2}s`,
+              '--x': `${Math.random() * 100}%`,
+              '--color': `hsl(${Math.random() * 360}, 100%, 50%)`
+            } as React.CSSProperties} />
+          ))}
+        </div>
+        <p className="decrypted-text">
+          {caesarDecrypt(encryptedText, 8).split('').reverse().join('')}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="mini-game-overlay">
       <div className="mini-game">
@@ -138,6 +183,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
               Try Again
             </button>
           </div>
+        ) : showCongrats ? (
+          renderCongrats()
         ) : showLevelComplete ? (
           renderLevelComplete()
         ) : (
@@ -170,36 +217,11 @@ const Decryptor = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showGame, setShowGame] = useState(false);
 
-  const caesarDecrypt = (text: string, shift: number) => {
-    return text
-      .split('')
-      .map(char => {
-        if (char.match(/[a-z]/i)) {
-          const code = char.charCodeAt(0);
-          const isUpperCase = code >= 65 && code <= 90;
-          const base = isUpperCase ? 65 : 97;
-          return String.fromCharCode(((code - base - shift + 26) % 26) + base);
-        }
-        return char;
-      })
-      .join('');
-  };
-
-  const handleDecrypt = () => {
-    setShowGame(true);
-  };
-
   const handleGameWin = () => {
     setIsAnimating(true);
-    
-    // Step 1: Caesar decryption with shift 8
     const decrypted = caesarDecrypt(encryptedText, 8);
-    
-    // Step 2: Reverse the decrypted text
     const reversed = decrypted.split('').reverse().join('');
     setDecryptedText(reversed);
-
-    // Reset animation state after animation completes
     setTimeout(() => setIsAnimating(false), 1000);
     setShowGame(false);
   };
@@ -216,7 +238,7 @@ const Decryptor = () => {
           className="input-field"
         />
         <button 
-          onClick={handleDecrypt}
+          onClick={() => setShowGame(true)}
           className="decrypt-button"
           disabled={!encryptedText}
         >
@@ -235,6 +257,7 @@ const Decryptor = () => {
         <MiniGame
           onWin={handleGameWin}
           onClose={() => setShowGame(false)}
+          encryptedText={encryptedText}
         />
       )}
     </div>
