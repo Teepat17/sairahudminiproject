@@ -12,9 +12,17 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [lives, setLives] = useState(3);
   const [gameOver, setGameOver] = useState(false);
+  const [level, setLevel] = useState(1);
+  const [showLevelComplete, setShowLevelComplete] = useState(false);
+
+  const getLevelSpeed = (level: number) => {
+    const baseSpeed = 1000;
+    const speedMultiplier = Math.max(0.4, 1 - (level - 1) * 0.15);
+    return Math.round(baseSpeed * speedMultiplier);
+  };
 
   useEffect(() => {
-    if (!isPlaying || gameOver) return;
+    if (!isPlaying || gameOver || showLevelComplete) return;
 
     const moveStar = () => {
       setStarPosition({
@@ -33,14 +41,13 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
       });
     }, 1000);
 
-    // Move star every 500ms instead of 1000ms to make it faster
-    const starInterval = setInterval(moveStar, 250);
+    const starInterval = setInterval(moveStar, getLevelSpeed(level));
 
     return () => {
       clearInterval(timer);
       clearInterval(starInterval);
     };
-  }, [isPlaying, gameOver]);
+  }, [isPlaying, gameOver, level, showLevelComplete]);
 
   const handleMiss = () => {
     setLives(prev => {
@@ -53,12 +60,27 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   };
 
   const handleStarClick = () => {
-    onWin();
-    setIsPlaying(false);
+    if (level < 5) {
+      setShowLevelComplete(true);
+    } else {
+      onWin();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleNextLevel = () => {
+    setLevel(prev => prev + 1);
+    setTimeLeft(10);
+    setLives(3); // Reset hearts
+    setShowLevelComplete(false);
+    // Set random star position for the new level
+    setStarPosition({
+      x: Math.random() * 100,
+      y: Math.random() * 100
+    });
   };
 
   const handleGameAreaClick = (e: React.MouseEvent) => {
-    // Only count as miss if clicking the game area itself, not its children
     if (e.target === e.currentTarget) {
       handleMiss();
     }
@@ -69,13 +91,27 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setTimeLeft(10);
     setGameOver(false);
     setIsPlaying(true);
+    setLevel(1);
+    setShowLevelComplete(false);
   };
+
+  const renderLevelComplete = () => (
+    <div className="level-complete">
+      <h3>Level {level} Complete! 🎉</h3>
+      <p>Next Level: {level + 1}</p>
+      <p>Difficulty: {level === 5 ? 'Final Level!' : `Star speed: ${getLevelSpeed(level + 1)}ms`}</p>
+      <button className="next-level-button" onClick={handleNextLevel}>
+        Continue to Level {level + 1}
+      </button>
+    </div>
+  );
 
   return (
     <div className="mini-game-overlay">
       <div className="mini-game">
         <h2>Catch the Star!</h2>
         <div className="game-stats">
+          <p>Level: {level}/5</p>
           <p>Time left: {timeLeft}s</p>
           <div className="lives">
             {[...Array(lives)].map((_, i) => (
@@ -91,6 +127,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
               Try Again
             </button>
           </div>
+        ) : showLevelComplete ? (
+          renderLevelComplete()
         ) : (
           <>
             <div className="game-area" onClick={handleGameAreaClick}>

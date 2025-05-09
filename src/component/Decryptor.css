@@ -301,4 +301,40 @@
 .restart-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 255, 135, 0.4);
+}
+
+.level-complete {
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.level-complete h3 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.level-complete p {
+  margin: 10px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.next-level-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background-color 0.3s;
+}
+
+.next-level-button:hover {
+  background-color: #45a049;
 } 
