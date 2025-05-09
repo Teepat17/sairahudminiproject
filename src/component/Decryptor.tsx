@@ -15,6 +15,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   const [level, setLevel] = useState(1);
   const [showLevelComplete, setShowLevelComplete] = useState(false);
   const [isSpeedBoost, setIsSpeedBoost] = useState(false);
+  const [direction, setDirection] = useState({ x: 1, y: 1 });
+  const [speed, setSpeed] = useState({ x: 2, y: 2 });
 
   const getLevelSpeed = (level: number) => {
     const baseSpeed = 650;
@@ -26,9 +28,21 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     if (!isPlaying || gameOver || showLevelComplete) return;
 
     const moveStar = () => {
-      setStarPosition({
-        x: Math.random() * 90,
-        y: Math.random() * 90
+      setStarPosition(prev => {
+        let newX = prev.x + speed.x * direction.x;
+        let newY = prev.y + speed.y * direction.y;
+
+        // Bounce off walls
+        if (newX <= 0 || newX >= 90) {
+          setDirection(prev => ({ ...prev, x: -prev.x }));
+          newX = newX <= 0 ? 0 : 90;
+        }
+        if (newY <= 0 || newY >= 90) {
+          setDirection(prev => ({ ...prev, y: -prev.y }));
+          newY = newY <= 0 ? 0 : 90;
+        }
+
+        return { x: newX, y: newY };
       });
     };
 
@@ -55,7 +69,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
       clearInterval(starInterval);
       clearTimeout(speedBoostTimer);
     };
-  }, [isPlaying, gameOver, level, showLevelComplete, isSpeedBoost]);
+  }, [isPlaying, gameOver, level, showLevelComplete, isSpeedBoost, direction, speed]);
 
   const handleMiss = () => {
     setLives(prev => {
@@ -81,10 +95,19 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setTimeLeft(10);
     setLives(3); // Reset hearts
     setShowLevelComplete(false);
-    // Set random star position for the new level
+    // Set random initial position and direction
     setStarPosition({
       x: Math.random() * 90,
       y: Math.random() * 90
+    });
+    setDirection({
+      x: Math.random() > 0.5 ? 1 : -1,
+      y: Math.random() > 0.5 ? 1 : -1
+    });
+    // Increase speed with each level
+    setSpeed({
+      x: 2 + (level * 0.5),
+      y: 2 + (level * 0.5)
     });
     // Activate speed boost for the first second
     setIsSpeedBoost(true);
@@ -103,7 +126,12 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setIsPlaying(true);
     setLevel(1);
     setShowLevelComplete(false);
-    setIsSpeedBoost(true); // Activate speed boost on restart too
+    setSpeed({ x: 2, y: 2 });
+    setDirection({
+      x: Math.random() > 0.5 ? 1 : -1,
+      y: Math.random() > 0.5 ? 1 : -1
+    });
+    setIsSpeedBoost(true);
   };
 
   const renderLevelComplete = () => (
