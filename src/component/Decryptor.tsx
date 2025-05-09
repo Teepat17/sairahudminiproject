@@ -15,8 +15,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
   const [level, setLevel] = useState(1);
   const [showLevelComplete, setShowLevelComplete] = useState(false);
   const [isSpeedBoost, setIsSpeedBoost] = useState(false);
-  const [direction, setDirection] = useState({ x: 1, y: 1 });
-  const [speed, setSpeed] = useState({ x: 2, y: 2 });
+  const [angle, setAngle] = useState(Math.random() * Math.PI * 2);
+  const [speed, setSpeed] = useState(2);
 
   const getLevelSpeed = (level: number) => {
     const baseSpeed = 1;
@@ -29,19 +29,26 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
 
     const moveStar = () => {
       setStarPosition(prev => {
-        let newX = prev.x + speed.x * direction.x;
-        let newY = prev.y + speed.y * direction.y;
+        let newX = prev.x + Math.cos(angle) * speed;
+        let newY = prev.y + Math.sin(angle) * speed;
+        let newAngle = angle;
 
-        // Bounce off walls
+        // Bounce off walls with angle change
         if (newX <= 0 || newX >= 90) {
-          setDirection(prev => ({ ...prev, x: -prev.x }));
+          newAngle = Math.PI - angle; // Reverse horizontal direction
           newX = newX <= 0 ? 0 : 90;
         }
         if (newY <= 0 || newY >= 90) {
-          setDirection(prev => ({ ...prev, y: -prev.y }));
+          newAngle = -angle; // Reverse vertical direction
           newY = newY <= 0 ? 0 : 90;
         }
 
+        // Add some randomness to the bounce
+        if (newX <= 0 || newX >= 90 || newY <= 0 || newY >= 90) {
+          newAngle += (Math.random() - 0.5) * 0.5; // Add random angle variation
+        }
+
+        setAngle(newAngle);
         return { x: newX, y: newY };
       });
     };
@@ -69,7 +76,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
       clearInterval(starInterval);
       clearTimeout(speedBoostTimer);
     };
-  }, [isPlaying, gameOver, level, showLevelComplete, isSpeedBoost, direction, speed]);
+  }, [isPlaying, gameOver, level, showLevelComplete, isSpeedBoost, angle, speed]);
 
   const handleMiss = () => {
     setLives(prev => {
@@ -95,20 +102,14 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setTimeLeft(10);
     setLives(3); // Reset hearts
     setShowLevelComplete(false);
-    // Set random initial position and direction
+    // Set random initial position and angle
     setStarPosition({
       x: Math.random() * 90,
       y: Math.random() * 90
     });
-    setDirection({
-      x: Math.random() > 0.5 ? 1 : -1,
-      y: Math.random() > 0.5 ? 1 : -1
-    });
+    setAngle(Math.random() * Math.PI * 2);
     // Increase speed with each level
-    setSpeed({
-      x: 2 + (level * 0.5),
-      y: 2 + (level * 0.5)
-    });
+    setSpeed(2 + (level * 0.5));
     // Activate speed boost for the first second
     setIsSpeedBoost(true);
   };
@@ -126,11 +127,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     setIsPlaying(true);
     setLevel(1);
     setShowLevelComplete(false);
-    setSpeed({ x: 2, y: 2 });
-    setDirection({
-      x: Math.random() > 0.5 ? 1 : -1,
-      y: Math.random() > 0.5 ? 1 : -1
-    });
+    setSpeed(2);
+    setAngle(Math.random() * Math.PI * 2);
     setIsSpeedBoost(true);
   };
 
