@@ -18,8 +18,8 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
 
     const moveStar = () => {
       setStarPosition({
-        x: Math.random() * 200,
-        y: Math.random() * 200
+        x: Math.random() * 50,
+        y: Math.random() * 50
       });
     };
 
@@ -34,7 +34,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     }, 1000);
 
     // Move star every 500ms instead of 1000ms to make it faster
-    const starInterval = setInterval(moveStar, 500);
+    const starInterval = setInterval(moveStar, 100);
 
     return () => {
       clearInterval(timer);
