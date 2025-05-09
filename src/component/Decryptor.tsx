@@ -34,7 +34,7 @@ const MiniGame = ({ onWin, onClose }: GameProps) => {
     }, 1000);
 
     // Move star every 500ms instead of 1000ms to make it faster
-    const starInterval = setInterval(moveStar, 100);
+    const starInterval = setInterval(moveStar, 250);
 
     return () => {
       clearInterval(timer);
