@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="app">
       <Decryptor />
-      <p className="credit">Made by P'Teepat</p>
+      <p className="credit">Made by P'Tee</p>
     </div>
   )
 }
